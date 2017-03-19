@@ -1,0 +1,19 @@
+{
+  "name": "blockchain",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "crypto-js": "^3.1.8",
+    "express": "~4.15.2",
+    "ws": "^2.2.1",
+    "ip": "^1.1.5",
+    "ngrok": "^2.2.6"
+  },
+  "engines": {
+    "node": ">=7.7.2"
+  }
+}

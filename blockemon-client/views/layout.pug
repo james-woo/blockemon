@@ -1,0 +1,28 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    meta(name='theme-color' content='#4DA5F4')
+    meta(name='csrf-token', content=_csrf)
+    title #{title}
+    link(rel='shortcut icon', href='/favicon.png')
+    link(rel='stylesheet', href='http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css')
+    link(rel='stylesheet', href='/css/main.css')
+
+  body
+    include partials/header
+    .container
+      include partials/flash
+      block content
+
+    script(src='http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js')
+    script(src='http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js')
+    script(src='http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js')
+    script(src='http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js')
+    script(src='http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js')
+    script(src='/js/lib/jquery-2.2.4.min.js')
+    script(src='/js/lib/bootstrap.min.js')
+    script(src='/js/main.js')
+    

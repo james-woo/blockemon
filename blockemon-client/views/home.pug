@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  .container
+  h1
+    | Blocks
+  table.table
+    thead
+      tr
+        th Height
+        th Time
+        th Creator
+        th Hash
+        th Size (Bytes)
+    tbody
+      each b in blocks
+        tr
+          td= b.index 
+          td= b.timestamp
+          td= b.data.owner
+          td= b.hash
+          td= (b.index + b.timestamp + b.data.owner + b.hash).length * 4

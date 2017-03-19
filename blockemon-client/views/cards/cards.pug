@@ -1,0 +1,22 @@
+extends ../layout
+
+block content
+  h1 Cards
+  form(action='/cards/create', method='GET')
+    button.btn.btn.btn-primary(type='submit')
+      i.fa.fa-pencil
+      | Create
+  each c in cards
+    md-card
+      md-card-header
+        md-card-header-text
+          span.md-title= c.card_name
+          span.md-subhead= c.type
+      img(src=c.card_image)
+      md-card-content
+        p= c.card_description
+      md-card-footer(layout='row' layout-align='end center')
+        span
+          strong= 'Attack ' + c.card_attack 
+        span
+          strong= ' Defense ' + c.card_defense

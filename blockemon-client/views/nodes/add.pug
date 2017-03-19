@@ -1,0 +1,25 @@
+extends ../layout
+
+block content
+  .page-header
+    h3 Add Node
+
+  form.form-horizontal(action='/nodes/add', method='POST')
+    input(type='hidden', name='_csrf', value=_csrf)
+    .form-group
+      label.col-sm-3.control-label(for='email') Email
+      .col-sm-7
+        input.form-control(type='text', name='email', id='email', placeholder='your email')
+    .form-group
+      label.col-sm-3.control-label(for='http') HTTP URL
+      .col-sm-7
+        input.form-control(type='text', name='http', id='http', placeholder='HTTP URL of your node')
+    .form-group
+      label.col-sm-3.control-label(for='p2p') P2P URL
+      .col-sm-7
+        input.form-control(type='text', name='p2p', id='p2p', placeholder='P2P URL of your node')
+    .form-group
+      .col-sm-offset-3.col-sm-4
+        button.btn.btn.btn-primary(type='submit')
+          i.fa.fa-pencil
+          | Add Node

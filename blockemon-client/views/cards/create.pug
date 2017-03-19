@@ -1,0 +1,36 @@
+extends ../layout
+
+block content
+  .page-header
+    h3 Create Card
+
+  form.form-horizontal(action='/cards/create', method='POST')
+    input(type='hidden', name='_csrf', value=_csrf)
+    .form-group
+      label.col-sm-3.control-label(for='cardname') Name
+      .col-sm-7
+        input.form-control(type='text', name='cardname', id='cardname', placeholder='name of the card')
+    .form-group
+      label.col-sm-3.control-label(for='cardimage') Image
+      .col-sm-7
+        input.form-control(type='text', name='cardimage', id='cardimage', placeholder='url of card image', value=link)
+    .form-group
+      label.col-sm-3.control-label(for='carddescription') Description
+      .col-sm-7
+        input.form-control(type='text', name='carddescription', id='carddescription', placeholder='description of the card')
+    .form-group
+      label.col-sm-3.control-label(for='carddescription') Type
+      .col-sm-7
+        div.radio
+          label
+            input(type='radio', name='cardtype', id='cardtype', value='monster', checked='checked') 
+            | Monster
+        div.radio
+          label
+            input(type='radio', name='cardtype', id='cardtype', value='monster') 
+            | Spell
+    .form-group
+      .col-sm-offset-3.col-sm-4
+        button.btn.btn.btn-primary(type='submit')
+          i.fa.fa-pencil
+          | Create Card
