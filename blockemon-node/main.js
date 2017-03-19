@@ -44,21 +44,33 @@ var initHttpServer = () => {
 
   app.get('/', (req, res) => res.redirect('index.html'));
 
-  app.get('/cards', (req, res) => res.send(JSON.stringify(bc.blockchain)));
+  app.get('/cards', (req, res) => res.send(getCards(JSON.stringify(bc.blockchain))));
   
   app.post('/cards/create', (req, res) => {
+    var type = req.body.cardtype;
+    var email = req.user.email;
     var createRequest = {
-      owner: http_url,
-      type: req.body.cardtype,
-      card_name: req.body.cardname,
-      card_image: req.body.cardimage,
-      card_description: req.body.carddescription,
-      card_attack: Math.floor(Math.random() * 11),
-      card_defense: Math.floor(Math.random() * 10)
+      index: bc.blockchain.length - 1,
+      card: {
+        owner: email,
+        type: type,
+        card_name: req.body.cardname,
+        card_image: req.body.cardimage,
+        card_description: req.body.carddescription,
+        card_attack: Math.floor(Math.random() * 11),
+        card_defense: (type=="monster") ? Math.floor(Math.random() * 10) : null
+      },
+      relayed: email,
+      reward: 50,
+      transaction: {
+        from: email,
+        to: "base",
+        value: 1
+      }
     };
 
     broadcast(requestCreate(createRequest));
-    var newBlock = bc.generateNextBlock(createRequest);
+    var newBlock = bc.generateNextBlock(createRequest, email);
     bc.addBlock(newBlock);
     broadcast(responseLatestMsg());
     console.log('block added: ' + JSON.stringify(newBlock));
@@ -79,9 +91,27 @@ var initHttpServer = () => {
     connectToNodes([node]);
     res.send();
   });
+
+  app.post('/data/add', (req, res) => {
+    var newBlock = bc.generateNextBlock(req.data, 'blockemon');
+    bc.addBlock(newBlock);
+    broadcast(responseLatestMsg());
+    console.log('block added: ' + JSON.stringify(newBlock));
+
+    res.send();
+  });
   
   server.listen(http_port, () => console.log('Listening to port: ' + server.address().port));
 };
+
+function getCards(blocks) {
+  var cards = [];
+  blocks.forEach((b) => {
+    if (b.card)
+      cards.push(b.card);
+  });
+  return cards;
+}
 
 var initP2PServer = () => {
   var p2pServer = new webSocket.Server({server, port: p2p_port});
@@ -163,13 +193,19 @@ var handleBlockchainResponse = (message) => {
 var handleDataCreate = (message) => {
   if (message.index != bc.getLatestBlock().index) {
     var createRequest = {
-      owner: message.owner,
-      type: message.type,
-      card_name: message.card_name,
-      card_image: message.card_image,
-      card_description: message.card_description,
-      card_attack: message.card_attack,
-      card_defense: message.card_defense
+      index: message.index,
+      card: {
+        owner: message.owner,
+        type: message.type,
+        card_name: message.card_name,
+        card_image: message.card_image,
+        card_description: message.card_description,
+        card_attack: message.card_attack,
+        card_defense: message.card_defense
+      },
+      relayed: message.relayed,
+      reward: message.reward,
+      transaction: message.transaction
     };
 
     var newBlock = bc.generateNextBlock(createRequest);
