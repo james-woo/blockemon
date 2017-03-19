@@ -181,7 +181,6 @@ var initHttpServer = () => {
 
   app.post('/cards/create', (req, res) => {
     var type = req.body.cardtype;
-    console.log(type)
     var createRequest = {
       index: bc.blockchain.length - 1,
       owner: req.user.email,

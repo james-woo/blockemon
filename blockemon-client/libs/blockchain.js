@@ -95,7 +95,7 @@ var getBlockChainData = () => {
     return data;
 };
 
-var getLatestBlock = () => blockchain[blockchain.length - 1];
+var getLatestBlock = () => blockchain[0];
 
 module.exports.calculateHashForBlock = calculateHashForBlock;
 module.exports.calculateHash = calculateHash;
