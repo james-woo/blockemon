@@ -73,7 +73,9 @@ exports.getSignup = (req, res) => {
  * POST /signup
  * Create a new local account.
  */
+
 exports.postSignup = (req, res, next) => {
+  // Code to set spinner
   req.assert('email', 'Email is not valid').isEmail();
   req.assert('password', 'Password must be at least 4 characters long').len(4);
   req.assert('confirmPassword', 'Passwords do not match').equals(req.body.password);
@@ -101,9 +103,11 @@ exports.postSignup = (req, res, next) => {
       if (err) { return next(err); }
       req.logIn(user, (err) => {
         if (err) {
+          // get rid of the spinner
+          // show error message
           return next(err);
         }
-        res.redirect('/');
+        next();
       });
     });
   });

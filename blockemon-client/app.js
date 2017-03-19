@@ -166,34 +166,51 @@ var initHttpServer = () => {
   app.get('/', homeController.index);
   
   app.get('/cards', (req, res) => {
+    var cards = getCards(bc.getBlockChainData());
     res.render('cards/cards', {
       title: 'Cards',
-      cards: JSON.parse(JSON.stringify(bc.getBlockChainData()))
+      cards: JSON.parse(JSON.stringify(cards))
     });
   });
   
   app.get('/cards/create', (req, res) => {
+    if (!req.user) {
+      res.redirect('/login');
+    }
+    var canCreate = (bc.calculateWorth(req.user.email) > 1);
+    console.log('worth of ' + req.user.email + ' = ' + bc.calculateWorth(req.user.email));
     res.render('cards/create', {
       title: 'Create Card',
-      link: pepes[Math.floor(Math.random() * 9)]
+      link: pepes[Math.floor(Math.random() * 9)],
+      canCreate: canCreate
     });
   });
 
   app.post('/cards/create', (req, res) => {
     var type = req.body.cardtype;
+    var email = req.user.email;
     var createRequest = {
       index: bc.blockchain.length - 1,
-      owner: req.user.email,
-      type: type,
-      card_name: req.body.cardname,
-      card_image: req.body.cardimage,
-      card_description: req.body.carddescription,
-      card_attack: Math.floor(Math.random() * 11),
-      card_defense: (type=="monster") ? Math.floor(Math.random() * 10) : null
+      card: {
+        owner: email,
+        type: type,
+        card_name: req.body.cardname,
+        card_image: req.body.cardimage,
+        card_description: req.body.carddescription,
+        card_attack: Math.floor(Math.random() * 11),
+        card_defense: (type=="monster") ? Math.floor(Math.random() * 10) : null
+      },
+      relayed: email,
+      reward: 50,
+      transaction: {
+        from: email,
+        to: "base",
+        value: 1
+      }
     };
 
     broadcast(requestCreate(createRequest));
-    var newBlock = bc.generateNextBlock(createRequest);
+    var newBlock = bc.generateNextBlock(createRequest, email);
     bc.addBlock(newBlock);
     broadcast(responseLatestMsg());
     console.log('block added: ' + JSON.stringify(newBlock));
@@ -235,6 +252,15 @@ var initHttpServer = () => {
     res.redirect('/nodes');
   });
 
+  app.post('/data/add', (req, res) => {
+    var newBlock = bc.generateNextBlock(req.data, 'blockemon');
+    bc.addBlock(newBlock);
+    broadcast(responseLatestMsg());
+    console.log('block added: ' + JSON.stringify(newBlock));
+
+    res.send();
+  });
+
   app.get('/login', userController.getLogin);
   app.post('/login', userController.postLogin);
   app.get('/logout', userController.logout);
@@ -243,7 +269,26 @@ var initHttpServer = () => {
   app.get('/reset/:token', userController.getReset);
   app.post('/reset/:token', userController.postReset);
   app.get('/signup', userController.getSignup);
-  app.post('/signup', userController.postSignup);
+  app.post('/signup', userController.postSignup, (req, res) => {
+    // Add monies
+    var createRequest = {
+      index: bc.blockchain.length - 1,
+      relayed: 'base',
+      reward: 0,
+      transaction: {
+        from: 'base',
+        to: req.body.email,
+        value: 5
+      }
+    };
+    var newBlock = bc.generateNextBlock(createRequest, 'base');
+    bc.addBlock(newBlock);
+    broadcast(responseLatestMsg());
+    console.log('block added: ' + JSON.stringify(newBlock));
+
+    res.send();
+    res.redirect('/');
+  });
   app.get('/account', passportConfig.isAuthenticated, userController.getAccount);
   app.post('/account/profile', passportConfig.isAuthenticated, userController.postUpdateProfile);
   app.post('/account/password', passportConfig.isAuthenticated, userController.postUpdatePassword);
@@ -256,6 +301,16 @@ var initHttpServer = () => {
 
   server.listen(http_port, () => console.log('Listening to port: ' + server.address().port));
 };
+
+function getCards(blocks) {
+  var cards = [];
+  blocks.forEach((b) => {
+    if (b.card)
+      cards.push(b.card);
+  });
+  return cards;
+}
+
 var initP2PServer = () => {
   var p2pServer = new webSocket.Server({server, port: p2p_port});
   p2pServer.on('connection', ws => initConnection(ws));
@@ -339,16 +394,19 @@ var handleDataCreate = (message) => {
   if (message.index != bc.getLatestBlock().index) {
     var createRequest = {
       index: message.index,
-      owner: message.owner,
-      type: message.type,
-      card_name: message.card_name,
-      card_image: message.card_image,
-      card_description: message.card_description,
-      card_attack: message.card_attack,
-      card_defense: message.card_defense
+      card: {
+        owner: message.owner,
+        type: message.type,
+        card_name: message.card_name,
+        card_image: message.card_image,
+        card_description: message.card_description,
+        card_attack: message.card_attack,
+        card_defense: message.card_defense
+      },
+      relayed: message.relayed
     };
 
-    var newBlock = bc.generateNextBlock(createRequest);
+    var newBlock = bc.generateNextBlock(createRequest, message.relayed);
     bc.addBlock(newBlock);
     broadcast(responseLatestMsg());
     console.log('block added: ' + JSON.stringify(newBlock));
@@ -402,3 +460,4 @@ initHttpServer();
 initP2PServer();
 
 module.exports = app;
+module.exports.responseLatestMsg = responseLatestMsg;

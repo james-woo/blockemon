@@ -31,7 +31,11 @@ block content
             | Spell
     .form-group
       .col-sm-offset-3.col-sm-4
-        button.btn.btn.btn-primary(type='submit', data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Mining Block")
-          i.fa.fa-pencil
-          | Create Card
-        br
+        if canCreate
+          button.btn.btn.btn-primary(type='submit', onclick='this.form.submit(); this.innerText="Mining"; this.disabled=true;')
+            i.fa.fa-pencil
+            | Create Card
+          br
+        else
+          p You don't have enough ecoin to create cards. Mine some more!
+        p Mining takes time, please be patient
