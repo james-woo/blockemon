@@ -180,15 +180,17 @@ var initHttpServer = () => {
   });
 
   app.post('/cards/create', (req, res) => {
+    var type = req.body.cardtype;
+    console.log(type)
     var createRequest = {
       index: bc.blockchain.length - 1,
       owner: req.user.email,
-      type: req.body.cardtype,
+      type: type,
       card_name: req.body.cardname,
       card_image: req.body.cardimage,
       card_description: req.body.carddescription,
       card_attack: Math.floor(Math.random() * 11),
-      card_defense: Math.floor(Math.random() * 10)
+      card_defense: (type=="monster") ? Math.floor(Math.random() * 10) : null
     };
 
     broadcast(requestCreate(createRequest));
@@ -214,11 +216,21 @@ var initHttpServer = () => {
   });
   
   app.post('/nodes/add', (req, res) => {
-    var node = {
-      user: req.body.email,
-      http: req.body.http,
-      p2p: req.body.p2p
-    };
+    if (req.body.terminal) {
+      var input = req.body.terminal.split(" ");
+      var node = {
+        user: req.body.email,
+        http: input[input.indexOf("http_tunnel:") + 1],
+        p2p: input[input.indexOf("p2p_tunnel:") + 1]
+      }
+    } else {
+      var node = {
+        user: req.body.email,
+        http: req.body.http,
+        p2p: req.body.p2p
+      };
+    }
+
     connectToNodes([node]);
     res.send();
     res.redirect('/nodes');
@@ -295,7 +307,8 @@ var connectToNodes = (newNodes) => {
     var ws = new webSocket(node.p2p);
     ws.on('open', () => initConnection(ws));
     ws.on('error', () => {
-        console.log('connection failed')
+        console.log('connection failed');
+        nodes.pop(node);
     });
   });
 };
